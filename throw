@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Throw script - Allows you to toss files to a web server using curl.
+#
+# Frontend for "throwing" files to web server
+# 
+# This software is licensed under the GNU GPL v2, and is released with 
+# absolutely NO WARRANTY OF ANY SORT.
+
+
+## Global variables ##
+throwlink="http://example.com/throw.php" # Upload script location.
+tmp="/tmp"                     # Temporary directory for files.
+
+## Screenshot variables ##
+sstmp="$tmp/tmp.png"           # Temporary screenshot file.
+sscommand="scrot $tmp/tmp.png" # command to take a screenshot.
+sstimeout=3                    # Screenshot sleep time
+
+throw () {
+	file="$1"
+	
+	if [ ! -f "$file" ]; then
+	    echo "This file does not exist: $file"
+	else
+	    echo "Uploading file..."
+	    curl -s -F "file=@$file" -H "Expect: 100 OK" $throwlink?uid=$RANDOM
+	fi
+}
+
+case $1 in 
+    -s) 
+        echo "Taking screenshot in $sstimeout seconds..."
+        sleep $sstimeout
+        `$sscommand`
+        throw $sstmp;;
+        
+    -f)
+        if [ -z "$2" ]; then
+            echo "You need to specify a file to upload..."
+        else
+            throw $2
+        fi;;
+      
+    *)
+        echo "Throw; Usage:
+throw -s        : Take a screenshot and throw it.
+throw -f <file> : Throw a specific file.";;
+esac
